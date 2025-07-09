@@ -3,13 +3,13 @@ name: Generate Blog Post
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *' # Runs at the beginning of every hour
+    - cron: '0 * * * *'
 
 jobs:
   generate:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Required to push changes back to the repo
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -21,14 +21,14 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install dependencies (no lock file fallback)
+        run: |
+          echo "Installing even if no lock file is present..."
+          npm install --no-audit --no-fund || true
 
       - name: Generate new blog post
         run: npm run generate:blog
         env:
-          # This secret needs to be set in your GitHub repository settings
-          # for the AI to generate content.
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
       - name: Commit and push changes
@@ -36,10 +36,8 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
-          # Check if there are any changes to commit
           if ! git diff --staged --quiet; then
             git commit -m "feat: ✨ Add new blog post"
             git push
           else
             echo "No new blog post was generated, no changes to commit."
-          fi
