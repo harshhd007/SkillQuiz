@@ -3,7 +3,7 @@ name: Generate Blog Post
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 * * * *' # Every hour
 
 jobs:
   generate:
@@ -15,22 +15,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js (without cache)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Install dependencies (no lock file fallback)
-        run: |
-          echo "Installing even if no lock file is present..."
-          npm install --no-audit --no-fund || true
+      - name: Install dependencies
+        run: npm install
+        working-directory: SkillQuiz  # 🔁 Replace with your actual folder if needed
 
       - name: Generate new blog post
         run: npm run generate:blog
+        working-directory: SkillQuiz  # 🔁 Same here
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
       - name: Commit and push changes
+        working-directory: SkillQuiz  # 🔁 Again
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -40,4 +42,5 @@ jobs:
             git push
           else
             echo "No new blog post was generated, no changes to commit."
+
 
