@@ -9,38 +9,36 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write  # Needed to commit blog post
 
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: SkillQuiz  # 🔁 Replace with your actual folder if needed
+      - name: 🛠 Install dependencies using lock file
+        run: npm ci
+        working-directory: SkillQuiz  # Make sure this matches your root folder
 
-      - name: Generate new blog post
+      - name: ✨ Generate new blog post (via Gemini API)
         run: npm run generate:blog
-        working-directory: SkillQuiz  # 🔁 Same here
+        working-directory: SkillQuiz
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
-      - name: Commit and push changes
-        working-directory: SkillQuiz  # 🔁 Again
+      - name: 🚀 Commit and push blog changes
+        working-directory: SkillQuiz
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
           if ! git diff --staged --quiet; then
-            git commit -m "feat: ✨ Add new blog post"
+            git commit -m "feat: 🤖 Auto-generated blog post"
             git push
           else
-            echo "No new blog post was generated, no changes to commit."
-
-
+            echo "✅ No new blog post was generated, nothing to commit."
